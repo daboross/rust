@@ -1,3 +1,5 @@
+use core::hash::{Hash, Hasher};
+
 use crate::cell::UnsafeCell;
 use crate::fmt;
 use crate::marker::PhantomData;
@@ -642,6 +644,15 @@ impl<T: PartialEq> PartialEq for OnceLock<T> {
 
 #[stable(feature = "once_cell", since = "1.70.0")]
 impl<T: Eq> Eq for OnceLock<T> {}
+
+#[stable(feature = "once_lock_hash", since = "CURRENT_RUSTC_VERSION")]
+impl<T: Hash> Hash for OnceLock<T> {
+    /// Feeds the internal value into the given `Hasher`, producing a
+    /// different hash when empty and once set.
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.get().hash(state);
+    }
+}
 
 #[stable(feature = "once_cell", since = "1.70.0")]
 unsafe impl<#[may_dangle] T> Drop for OnceLock<T> {
